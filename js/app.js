@@ -1,121 +1,69 @@
-//DARTH VADER
-const p4 = new XMLHttpRequest();
-
-function personFour() {
-    const p4Req = JSON.parse(p4.responseText);
-    const p4NameTag = document.querySelector('#person4Name');
-    p4NameTag.innerHTML = p4Req.name;
-
-    const p4HW = new XMLHttpRequest();
-
-    function p4Home() {
-        const p4HomeReq = JSON.parse(p4HW.responseText);
-        const p4HomeTag = document.querySelector('#person4HomeWorld');
-        p4HomeTag.innerHTML = p4HomeReq.name;
-    }
-    p4HW.addEventListener('load', p4Home);
-    p4HW.open('GET', 'https://swapi.co/api/planets/1/');
-    p4HW.send();
-}
-
-p4.addEventListener('load', personFour);
-p4.open('GET', 'https://swapi.co/api/people/4/');
-p4.send();
-
-// HAN SOLO
-const p14 = new XMLHttpRequest();
-
-function personFourteen() {
-    const p14Req = JSON.parse(p14.responseText);
-    const p14NameTag = document.querySelector('#person14Name');
-    p14NameTag.innerHTML = p14Req.name;
-
-    const p14Species = new XMLHttpRequest();
-
-    function fourteenSpecies() {
-        const p14SpeciesReq = JSON.parse(p14Species.responseText);
-        const speciesTag = document.querySelector('#person14Species');
-        speciesTag.innerHTML = p14SpeciesReq.name;
-    }
-    p14Species.addEventListener('load', fourteenSpecies);
-    p14Species.open('GET', 'https://swapi.co/api/species/1/');
-    p14Species.send();
-}
-
-p14.addEventListener('load', personFourteen);
-p14.open('GET', 'https://swapi.co/api/people/14/');
-p14.send();
-
-//FILM LIST
-
-const filmList = new XMLHttpRequest();
-
-function getFilmList() {
-    const filmListReq = JSON.parse(filmList.responseText);
-
-    let filmTable = document.getElementById('filmList');
-    filmListReq.results.forEach(i => {
-        let filmCell = document.createElement('li');
-        filmCell.className = 'film';
-        filmTable.appendChild(filmCell);
-
-        let filmH2 = document.createElement('h2');
-        filmH2.className = 'filmTitle';
-        filmH2.innerHTML = i.title;
-        filmCell.appendChild(filmH2);
-
-        let planetUl = document.createElement('ul');
-        planetUl.className = 'planetUl';
-        filmCell.appendChild(planetUl);
-
-        let filmH3 = document.createElement('h3');
-        filmH3.className = 'planetTitle';
-        planetUl.appendChild(filmH3);
-        filmH3.innerHTML = 'Planets';
-
-        let pReq = new XMLHttpRequest();
-
-        const pReqListener = () => {
-            const pParsed = JSON.parse(pReq.responseText);
-            let cell = document.createElement('li');
-            cell.className = 'planet';
-            cell.innerHTML = pReq.name;
-            planetUl.appendChild(cell);
-        }
-        pReq.addEventListener('load', pReqListener);
-        pReq.open('GET', );
-        pReq.send();
-
+//HELPER FUNCTIONALITY  
+const request = (url, callback) => {
+    const oReq = new XMLHttpRequest();
+    oReq.addEventListener('load', function (data) {
+        const rData = JSON.parse(data.target.responseText);
+        callback(rData);
     });
-
-
-
-    //old way that i fucking heard was wrong or some shit
-    //     for (let j = 0; j < filmListReq.results[i].planets.length; j++) {
-    //         planetCall(filmListReq.results[i].planets[j], planetUl);
-    //     }
-
-    // }
-
-
-    // function planetCall(url, planetUl) {
-    //     let planetReq = new XMLHttpRequest();
-    //     planetReq.addEventListener('load', function () {
-    //         planetCell(this.responseText, planetUl)
-    //     })
-    //     planetReq.open('GET', url);
-    //     planetReq.send();
-    // }
-
-    // function planetCell(name, planetUl) {
-    //     let pReq = JSON.parse(name);
-    //     let cell = document.createElement('li');
-    //     cell.className = 'planet';
-    //     cell.innerHTML = pReq.name;
-    //     planetUl.appendChild(cell);
-
-    // }
+    oReq.open('GET', url);
+    oReq.send();
 }
-filmList.addEventListener('load', getFilmList);
-filmList.open('GET', 'https://swapi.co/api/films/');
-filmList.send();
+
+//PERSON 4
+request('https://swapi.co/api/people/4/', personFour);
+
+function personFour(data) {
+    console.log(data);
+    const p4NameTag = document.querySelector('#person4Name');
+    p4NameTag.innerHTML = data.name;
+
+    const p4Home = document.querySelector('#person4HomeWorld');
+    request('https://swapi.co/api/planets/1/', homeworld);
+
+    function homeworld(e) {
+        p4Home.innerHTML = e.name;
+    }
+}
+
+//PERSON 14
+request('https://swapi.co/api/people/14/', personFourteen);
+
+function personFourteen(data) {
+    console.log(data)
+    const p14Name = document.querySelector('#person14Name');
+    p14Name.innerHTML = data.name;
+
+    const p14Species = document.querySelector('#person14Species');
+    request('https://swapi.co/api/species/1/', getSpecies);
+
+    function getSpecies(e) {
+        p14Species.innerHTML = e.name;
+    }
+}
+
+//FILMS
+request('https://swapi.co/api/films/', getFilms);
+
+function getFilms(data) {
+    let films = data.results;
+    console.log(films)
+    films.forEach(i => {
+        let filmTitle = document.createElement('h4');
+        filmTitle.innerHTML = i.title;
+        let filmList = document.querySelector('#filmList');
+        filmList.appendChild(filmTitle);
+
+        let planets = i.planets;
+        planets.forEach(e => {
+            request(e, planetNames);
+            console.log(e)
+
+            function planetNames(p) {
+                let pName = document.createElement('li');
+                pName.innerHTML = p.name;
+                filmTitle.appendChild(pName);
+            }
+
+        })
+    })
+}
